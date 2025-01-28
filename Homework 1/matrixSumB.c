@@ -12,10 +12,9 @@
 #define MAXSIZE 10000  /* maximum matrix size */
 #define MAXWORKERS 10   /* maximum number of workers */
 
-pthread_mutex_t checkMaxMin; /* mutex lock for checking maximum and minimum*/ 
+pthread_mutex_t maxMinLock; /* mutex lock for checking maximum and minimum*/ 
 pthread_mutex_t sumTotal; /* mutex lock for adding to total*/ 
 int numWorkers;           /* number of workers */ 
-int numArrived = 0;       /* number who have arrived */
 
 /* timer */
 double read_timer() {
@@ -33,7 +32,7 @@ double read_timer() {
 double start_time, end_time; /* start and end times */
 int size, stripSize;  /* assume size is multiple of numWorkers */
 int matrix[MAXSIZE][MAXSIZE]; /* matrix */
-int max, min;
+int max = INT_MIN, min = INT_MAX;
 int maxI = 0, maxJ = 0, minI = 0, minJ = 0;
 int total = 0;
 
@@ -51,7 +50,7 @@ int main(int argc, char *argv[]) {
     pthread_attr_setscope(&attr, PTHREAD_SCOPE_SYSTEM);
   
     /* initialize mutex for maximum and minimum and total sum*/
-    pthread_mutex_init(&checkMaxMin, NULL);
+    pthread_mutex_init(&maxMinLock, NULL);
     pthread_mutex_init(&sumTotal, NULL);
 
     /* read command line args if any */
@@ -67,11 +66,6 @@ int main(int argc, char *argv[]) {
             matrix[i][j] = rand()%99;//rand()%99;
 	    }
     }
-
-    /* do the parallel work: create the workers */
-    start_time = read_timer();
-    max = INT_MIN;
-    min = INT_MAX;
 
     /* do the parallel work: create the workers */
     start_time = read_timer();
@@ -94,31 +88,45 @@ int main(int argc, char *argv[]) {
 
 void *Worker(void *arg) {
     long myid = (long)arg;
-    int localTotal, i, j, first, last;
+    int localTotal = 0, i, j, first, last;
+    int localMin = INT_MAX, localMax = INT_MIN;
+    int localMaxI = 0, localMaxJ = 0, localMinI = 0, localMinJ = 0;
 
     /* determine first and last rows of my strip */
     first = myid * stripSize;
     last = (myid == numWorkers - 1) ? (size - 1) : (first + stripSize - 1);
 
     /* compute sum, max, and min in my strip */
-    localTotal = 0;
     for (i = first; i <= last; i++) {
         for (j = 0; j < size; j++) {
             localTotal += matrix[i][j];
-            pthread_mutex_lock(&checkMaxMin);
-            if (max < matrix[i][j]) {
-                max = matrix[i][j];
-                maxI = i;
-                maxJ = j;
+            if (localMax < matrix[i][j]) {
+                localMax = matrix[i][j];
+                localMaxI = i;
+                localMaxJ = j;
             }
-            if (min > matrix[i][j]) {
-                min = matrix[i][j];
-                minI = i;
-                minJ = j;
+            if (localMin > matrix[i][j]) {
+                localMin = matrix[i][j];
+                localMinI = i;
+                localMinJ = j;
             }
-            pthread_mutex_unlock(&checkMaxMin);
         }
     }
+    
+    pthread_mutex_lock(&maxMinLock);
+    if (max < localMax) {
+        max = localMax;
+        maxI = localMaxI;
+        maxJ = localMaxJ;
+    }
+
+    if (min > localMin) {
+        min = localMin;
+        minI = localMinI;
+        minJ = localMinJ;
+    }
+    pthread_mutex_unlock(&maxMinLock);
+
     pthread_mutex_lock(&sumTotal);
     total += localTotal;
     pthread_mutex_unlock(&sumTotal);
