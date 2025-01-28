@@ -13,7 +13,7 @@
 #define MAXWORKERS 10   /* maximum number of workers */
 
 pthread_mutex_t maxMinLock; /* mutex lock for checking maximum and minimum*/ 
-pthread_mutex_t sumTotal; /* mutex lock for adding to total*/ 
+pthread_mutex_t sumLock; /* mutex lock for adding to total*/ 
 int numWorkers;           /* number of workers */ 
 
 /* timer */
@@ -51,7 +51,7 @@ int main(int argc, char *argv[]) {
   
     /* initialize mutex for maximum and minimum and total sum*/
     pthread_mutex_init(&maxMinLock, NULL);
-    pthread_mutex_init(&sumTotal, NULL);
+    pthread_mutex_init(&sumLock, NULL);
 
     /* read command line args if any */
     size = (argc > 1)? atoi(argv[1]) : MAXSIZE;
@@ -127,7 +127,7 @@ void *Worker(void *arg) {
     }
     pthread_mutex_unlock(&maxMinLock);
 
-    pthread_mutex_lock(&sumTotal);
+    pthread_mutex_lock(&sumLock);
     total += localTotal;
-    pthread_mutex_unlock(&sumTotal);
+    pthread_mutex_unlock(&sumLock);
 }
