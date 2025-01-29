@@ -18,7 +18,8 @@
 #include <stdbool.h>
 #include <time.h>
 #include <sys/time.h>
-#include <limits.h>   //för att använda INT_MIN och INT_MAX
+#include <limits.h> //för att använda INT_MIN och INT_MAX
+
 #define MAXSIZE 10000 /* maximum matrix size */
 #define MAXWORKERS 10 /* maximum number of workers */
 // #define DEBUG
@@ -104,9 +105,9 @@ int main(int argc, char *argv[])
     numWorkers = MAXWORKERS;
   stripSize = size / numWorkers;
 
-  /* initialize the matrix */
   srand(time(NULL)); // seed för att få olika värden varje gång programmet körs.
 
+  /* initialize the matrix */
   for (i = 0; i < size; i++)
   {
     for (j = 0; j < size; j++)
@@ -128,8 +129,10 @@ int main(int argc, char *argv[])
   }
 #endif
 
-  /* do the parallel work: create the workers */
+  /* Start timer */
   start_time = read_timer();
+
+  /* do the parallel work: create the workers */
   for (l = 0; l < numWorkers; l++)
     pthread_create(&workerid[l], &attr, Worker, (void *)l);
   pthread_exit(NULL);
@@ -152,10 +155,13 @@ void *Worker(void *arg)
 
   /* sum values in my strip */
   total = 0;
+  for (i = first; i <= last; i++){
+        for (j = 0; j < size; j++){
+        total += matrix[i][j];
+    }
+  }
 
-  for (i = first; i <= last; i++)
-    for (j = 0; j < size; j++)
-      total += matrix[i][j];
+    
 
   sums[myid] = total;
 
@@ -199,9 +205,7 @@ void *Worker(void *arg)
 
   if (myid == 0)
   {
-
     total = 0;
-
     for (i = 0; i < numWorkers; i++)
     {
       total += sums[i];
@@ -212,21 +216,21 @@ void *Worker(void *arg)
     int globalMaxPos[2];
     int globalMinPos[2];
 
-    for (int w = 0; w < numWorkers; w++)
+    for (int i = 0; i < numWorkers; i++)
     {
 
-      if (threadMax[w] > globalMax)
+      if (threadMax[i] > globalMax)
       {
-        globalMax = threadMax[w];
-        globalMaxPos[0] = threadMaxPos[w][0];
-        globalMaxPos[1] = threadMaxPos[w][1];
+        globalMax = threadMax[i];
+        globalMaxPos[0] = threadMaxPos[i][0];
+        globalMaxPos[1] = threadMaxPos[i][1];
       }
 
-      if (threadMin[w] < globalMin)
+      if (threadMin[i] < globalMin)
       {
-        globalMin = threadMin[w];
-        globalMinPos[0] = threadMinPos[w][0];
-        globalMinPos[1] = threadMinPos[w][1];
+        globalMin = threadMin[i];
+        globalMinPos[0] = threadMinPos[i][0];
+        globalMinPos[1] = threadMinPos[i][1];
       }
     }
 
