@@ -15,9 +15,10 @@ double integrate(double x) {
 
 int main() {
     double sum = 0.0;
+    double x = 0.0;
     
     for (int i = 0; i < STEPS; i++) {  
-        double x = i * step;  
+        x = i * step;  
         sum += integrate(x);
     }
 
