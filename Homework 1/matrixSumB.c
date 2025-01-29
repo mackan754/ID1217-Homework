@@ -69,6 +69,7 @@ int main(int argc, char *argv[]) {
 
     /* do the parallel work: create the workers */
     start_time = read_timer();
+    
     for (l = 0; l < numWorkers; l++) {
         pthread_create(&workerid[l], &attr, Worker, (void *)l);
     }
