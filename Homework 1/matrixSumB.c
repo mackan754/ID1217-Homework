@@ -13,7 +13,7 @@
 #define MAXWORKERS 10   /* maximum number of workers */
 
 pthread_mutex_t maxMinLock; /* mutex lock for checking maximum and minimum*/ 
-pthread_mutex_t sumLock; /* mutex lock for adding to total*/ 
+pthread_mutex_t sumLock; /* mutex lock for adding to sum*/ 
 int numWorkers;           /* number of workers */ 
 
 /* timer */
@@ -32,8 +32,8 @@ double read_timer() {
 double start_time, end_time; /* start and end times */
 int size, stripSize;  /* assume size is multiple of numWorkers */
 int matrix[MAXSIZE][MAXSIZE]; /* matrix */
-int max = INT_MIN, min = INT_MAX;
-int maxI = 0, maxJ = 0, minI = 0, minJ = 0;
+int max = INT_MIN, min = INT_MAX; 
+int maxI = 0, maxJ = 0, minI = 0, minJ = 0; /* used for storing position of min and max */
 int total = 0;
 
 void *Worker(void *);
@@ -114,6 +114,7 @@ void *Worker(void *arg) {
         }
     }
     
+    /* lock before updating global variables*/
     pthread_mutex_lock(&maxMinLock);
     if (max < localMax) {
         max = localMax;

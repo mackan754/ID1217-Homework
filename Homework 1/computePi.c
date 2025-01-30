@@ -13,13 +13,13 @@ gcc -o computePi computePi.c -lm -pthread
 #include <stdbool.h>
 #include <pthread.h>
 
-#define STEPS 100
+#define STEPS 1000000000
 
 double step;      // The width of the step
 double sum = 0.0; // Sum of areas
 int np;           // Number of threads
 
-pthread_mutex_t mutex; // Mutex for synchronization
+pthread_mutex_t sumLock; // Mutex for synchronization
 
 // Timer function
 double read_timer()
@@ -38,7 +38,7 @@ double f(double x)
 /* The work the workers/threads will execute */
 void *compute_pi_worker(void *arg)
 {
-    int worker_id = *(int *)arg;
+    long worker_id = (long)arg;
     double local_sum = 0.0;
 
     // Define the range of the thread
@@ -52,48 +52,49 @@ void *compute_pi_worker(void *arg)
     }
 
     // Lock the mutex before updating the global sum
-    pthread_mutex_lock(&mutex);
+    pthread_mutex_lock(&sumLock);
 
     sum += local_sum;
 
     // Unlock the mutex
-    pthread_mutex_unlock(&mutex);
-
-    free(arg); // Free the memory allocated for the thread id
-
-    return NULL;
+    pthread_mutex_unlock(&sumLock);
 }
 
 /*  */
 int main(int argc, char *argv[])
 {
-    /* Too handle wrong amout of thread usages */
-    if (argc != 2) // Check if the user entered the number of threads
+    /* To handle user error */
+    if (argc != 2) 
     {
-        printf("Usage: %s <number_of_threads>\n", argv[0]); // Print the usage of threads
+        printf("Usage: %s <number_of_threads>\n", argv[0]); 
         return 1;
     }
+
     /* To handle user error */
-    np = atoi(argv[1]); // Number of threads
-    if (np <= 0)        // Number of threads must be greater than 0
+    np = atoi(argv[1]); 
+    if (np <= 0)        
     {
         printf("Number of threads must be greater than 0.\n");
         return 1;
     }
 
     pthread_t worker_threads[np];       // Array of threads
-    pthread_mutex_init(&mutex, NULL);   // Initialize the mutex
+    pthread_attr_t attr;
+    pthread_mutex_init(&sumLock, NULL);   // Initialize the mutex
     step = 1.0 / STEPS;                 // Calculate the width of the step
+     long l; /* use long in case of a 64-bit system */
+
+    /* set global thread attributes */
+    pthread_attr_init(&attr);
+    pthread_attr_setscope(&attr, PTHREAD_SCOPE_SYSTEM);
 
     /* Start timer */
     double start_time = read_timer();
 
     // Create worker threads
-    for (int i = 0; i < np; i++)
+    for (l = 0; l < np; l++)
     {
-        int *worker_id = malloc(sizeof(int));
-        *worker_id = i;
-        pthread_create(&worker_threads[i], NULL, compute_pi_worker, worker_id);
+        pthread_create(&worker_threads[l], &attr, compute_pi_worker, (void *)l);
     }
 
     // Join worker threads
@@ -108,8 +109,4 @@ int main(int argc, char *argv[])
     // Print the estimated value of Pi
     printf("Estimated Pi: %.15f\n", sum * 4);
     printf("Execution Time: %.6f seconds\n", end_time - start_time);
-
-    pthread_mutex_destroy(&mutex); // Destroy the mutex
-
-    return 0;
 }

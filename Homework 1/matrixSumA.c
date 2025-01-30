@@ -63,6 +63,7 @@ int size, stripSize;          /* assume size is multiple of numWorkers */
 int sums[MAXWORKERS];         /* partial sums */
 int matrix[MAXSIZE][MAXSIZE]; /* matrix */
 
+/* struct used for storing value and position for matrix elements */
 typedef struct
 {
   int i;
@@ -70,8 +71,8 @@ typedef struct
   int value;
 } Element;
 
-Element workerMin[MAXWORKERS];
-Element workerMax[MAXWORKERS];
+Element workerMin[MAXWORKERS]; /* used for storing min values for different workers*/
+Element workerMax[MAXWORKERS]; /* used for max values*/
 
 void *Worker(void *);
 
@@ -100,7 +101,7 @@ int main(int argc, char *argv[])
     numWorkers = MAXWORKERS;
   stripSize = size / numWorkers;
 
-  srand(time(NULL)); // seed för att få olika värden varje gång programmet körs.
+  /* srand(time(NULL)); // seed to get different random values.. */
 
   /* initialize the matrix */
   for (i = 0; i < size; i++)
@@ -179,6 +180,7 @@ void *Worker(void *arg)
 
   Barrier();
 
+  /* worker 0 updates the global variables */
   if (myid == 0)
   {
     total = 0;
