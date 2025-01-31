@@ -5,7 +5,7 @@
              and prints the total sum to the standard output
 
    usage under Linux:
-     gcc matrixSum.c -lpthread
+     gcc matrixSumA.c -lpthread
      a.out size numWorkers
 
 */
@@ -18,7 +18,7 @@
 #include <stdbool.h>
 #include <time.h>
 #include <sys/time.h>
-#include <limits.h>
+#include <limits.h> // new! For INT_MIN and INT_MAX
 
 #define MAXSIZE 10000 /* maximum matrix size */
 #define MAXWORKERS 10 /* maximum number of workers */
@@ -63,7 +63,11 @@ int size, stripSize;          /* assume size is multiple of numWorkers */
 int sums[MAXWORKERS];         /* partial sums */
 int matrix[MAXSIZE][MAXSIZE]; /* matrix */
 
+<<<<<<< Updated upstream
 /* struct used for storing value and position for matrix elements */
+=======
+/* new */
+>>>>>>> Stashed changes
 typedef struct
 {
   int i;
@@ -140,8 +144,9 @@ void *Worker(void *arg)
 {
   long myid = (long)arg;
   int total, i, j, first, last;
-  Element max = {0, 0, INT_MIN};
-  Element min = {0, 0, INT_MAX};
+
+  Element max = {0, 0, INT_MIN}; // new! Initialize max to the smallest possible value
+  Element min = {0, 0, INT_MAX}; // new! Initialize min to the largest possible value
 
 #ifdef DEBUG
   printf("worker %ld (pthread id %ld) has started\n", myid, pthread_self());
@@ -158,13 +163,13 @@ void *Worker(void *arg)
     for (j = 0; j < size; j++)
     {
       total += matrix[i][j];
-      if (matrix[i][j] > max.value)
+      if (matrix[i][j] > max.value) // new! Check if the current value is greater than the current max
       {
         max.value = matrix[i][j];
         max.i = i;
         max.j = j;
       }
-      if (matrix[i][j] < min.value)
+      if (matrix[i][j] < min.value) // new! Check if the current value is less than the current min
       {
         min.value = matrix[i][j];
         min.i = i;
@@ -173,7 +178,7 @@ void *Worker(void *arg)
     }
   }
 
-  /* Store results for this worker */
+  /* new! Store results for this worker */
   sums[myid] = total;
   workerMax[myid] = max;
   workerMin[myid] = min;
@@ -187,12 +192,14 @@ void *Worker(void *arg)
 
     for (i = 0; i < numWorkers; i++)
     {
+
       total += sums[i];
-      if (workerMax[i].value > max.value)
+
+      if (workerMax[i].value > max.value) // new! Check if the current max is greater than the global max
       {
         max = workerMax[i];
       }
-      if (workerMin[i].value < min.value)
+      if (workerMin[i].value < min.value) // new! Check if the current min is less than the global min
       {
         min = workerMin[i];
       }
