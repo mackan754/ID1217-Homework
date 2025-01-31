@@ -2,6 +2,8 @@
    usage under Linux:
      gcc matrixSumB.c -lpthread
      a.out size numWorkers
+        gcc -o matrixSumB matrixSumB.c -lpthread
+        ./matrixSumB 1000 4 [matrix size, number of Workers]
  */
 
 #ifndef _REENTRANT
@@ -18,27 +20,9 @@
 #define MAXSIZE 10000 /* maximum matrix size */
 #define MAXWORKERS 10 /* maximum number of workers */
 
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-pthread_mutex_t maxMinLock; /* mutex lock for checking maximum and minimum*/ 
-pthread_mutex_t sumLock; /* mutex lock for adding to sum*/ 
-int numWorkers;           /* number of workers */ 
-=======
 pthread_mutex_t maxMinLock; /* new! mutex lock for checking maximum and minimum*/
 pthread_mutex_t sumLock;    /* new! mutex lock for adding to total*/
 int numWorkers;             /* number of workers */
->>>>>>> Stashed changes
-=======
-pthread_mutex_t maxMinLock; /* new! mutex lock for checking maximum and minimum*/
-pthread_mutex_t sumLock;    /* new! mutex lock for adding to total*/
-int numWorkers;             /* number of workers */
->>>>>>> Stashed changes
-=======
-pthread_mutex_t maxMinLock; /* new! mutex lock for checking maximum and minimum*/
-pthread_mutex_t sumLock;    /* new! mutex lock for adding to total*/
-int numWorkers;             /* number of workers */
->>>>>>> Stashed changes
 
 /* timer */
 double read_timer()
@@ -58,28 +42,10 @@ double read_timer()
 double start_time, end_time;  /* start and end times */
 int size, stripSize;          /* assume size is multiple of numWorkers */
 int matrix[MAXSIZE][MAXSIZE]; /* matrix */
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-int max = INT_MIN, min = INT_MAX; 
-int maxI = 0, maxJ = 0, minI = 0, minJ = 0; /* used for storing position of min and max */
-int total = 0;
-=======
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
 
 int max = INT_MIN, min = INT_MAX;           // new! Initialize max to the smallest possible value and min to the largest possible value
 int maxI = 0, maxJ = 0, minI = 0, minJ = 0; // new! Initialize max and min coordinates to 0
 int total = 0;                              // new! Initialize total to 0
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
 
 void *Worker(void *);
 
@@ -173,30 +139,11 @@ void *Worker(void *arg)
             }
         }
     }
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-    
-    /* lock before updating global variables*/
-    pthread_mutex_lock(&maxMinLock);
-    if (max < localMax) {
-=======
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
 
     pthread_mutex_lock(&maxMinLock); // new! lock the mutex before checking the maximum and minimum
 
     if (max < localMax)
     {
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
         max = localMax;
         maxI = localMaxI;
         maxJ = localMaxJ;

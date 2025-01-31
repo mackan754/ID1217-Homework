@@ -5,13 +5,14 @@
              and prints the total sum to the standard output
 
    usage under Linux:
-     gcc matrixSumA.c -lpthread
-     a.out size numWorkers
+     gcc -o matrixSumA matrixSumA.c -lpthread
+     ./matrixSumA 1000 4 [size numWorkers]
 
 */
 #ifndef _REENTRANT
 #define _REENTRANT
 #endif
+
 #include <pthread.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -63,19 +64,6 @@ int size, stripSize;          /* assume size is multiple of numWorkers */
 int sums[MAXWORKERS];         /* partial sums */
 int matrix[MAXSIZE][MAXSIZE]; /* matrix */
 
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-/* struct used for storing value and position for matrix elements */
-=======
-/* new */
->>>>>>> Stashed changes
-=======
-/* new */
->>>>>>> Stashed changes
-=======
-/* new */
->>>>>>> Stashed changes
 typedef struct
 {
   int i;
