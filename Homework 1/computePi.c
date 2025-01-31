@@ -14,7 +14,11 @@ gcc -o computePi computePi.c -lm -pthread
 #include <pthread.h>
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 #define STEPS 1000000000
+=======
+#define STEPS 1000000000 // max 10_000_000_000
+>>>>>>> Stashed changes
 =======
 #define STEPS 1000000000 // max 10_000_000_000
 >>>>>>> Stashed changes
@@ -72,6 +76,7 @@ void *compute_pi_worker(void *arg)
 int main(int argc, char *argv[])
 {
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     /* To handle user error */
     if (argc != 2) 
     {
@@ -90,16 +95,29 @@ int main(int argc, char *argv[])
         return 1;
     }
 
+=======
+    /* Too handle wrong amout/type of thread input */
+    if (argc != 2) // Check if the user has entered the a correct number of arguments
+    {
+        printf("Usage: %s <number_of_threads>\n", argv[0]);
+        return 1;
+    }
+
+>>>>>>> Stashed changes
     np = atoi(argv[1]); // Number of threads. ASCI to integer
 
     /* To handle user input error */
     if (np <= 0)        // Number of threads must be an positive integer
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     {
         printf("Number of threads must be greater than 0.\n");
         return 1;
     }
 
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
     pthread_t worker_threads[np];       // Array of threads
     pthread_attr_t attr;
@@ -110,6 +128,11 @@ int main(int argc, char *argv[])
     /* set global thread attributes */
     pthread_attr_init(&attr);
     pthread_attr_setscope(&attr, PTHREAD_SCOPE_SYSTEM);
+=======
+    pthread_t worker_threads[np];     // Array of threads
+    pthread_mutex_init(&mutex, NULL); // Initialize the mutex
+    step = 1.0 / STEPS;               // Calculate the width of the step
+>>>>>>> Stashed changes
 =======
     pthread_t worker_threads[np];     // Array of threads
     pthread_mutex_init(&mutex, NULL); // Initialize the mutex

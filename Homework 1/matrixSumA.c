@@ -64,7 +64,11 @@ int sums[MAXWORKERS];         /* partial sums */
 int matrix[MAXSIZE][MAXSIZE]; /* matrix */
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 /* struct used for storing value and position for matrix elements */
+=======
+/* new */
+>>>>>>> Stashed changes
 =======
 /* new */
 >>>>>>> Stashed changes
