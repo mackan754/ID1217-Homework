@@ -74,7 +74,7 @@ int main(int argc, char *argv[])
         numWorkers = MAXWORKERS;
     stripSize = size / numWorkers;
 
-    //srand(time(NULL)); // seed för att få olika värden varje gång programmet körs.
+    // srand(time(NULL)); // seed för att få olika värden varje gång programmet körs.
 
     /* initialize the matrix */
     for (i = 0; i < size; i++)
@@ -92,6 +92,8 @@ int main(int argc, char *argv[])
     {
         pthread_create(&workerid[l], &attr, Worker, (void *)l);
     }
+
+    /* Worker threads do work... */
 
     /* join all threads */
     for (l = 0; l < numWorkers; l++)
@@ -118,9 +120,19 @@ void *Worker(void *arg)
     /* determine first and last rows of my strip */
     first = myid * stripSize;
     last = (myid == numWorkers - 1) ? (size - 1) : (first + stripSize - 1);
+    /* 
+    if (myid == numWorkers - 1)
+    {
+        last = size - 1;
+    }
+    else
+    {
+        last = first + stripSize - 1;
+    }
+    */
 
-    /* compute sum, max, and min in my strip */
-    for (i = first; i <= last; i++)
+        /* compute sum, max, and min in my strip */
+        for (i = first; i <= last; i++)
     {
         for (j = 0; j < size; j++)
         {

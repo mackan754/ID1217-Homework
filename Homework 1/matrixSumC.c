@@ -40,12 +40,12 @@ double read_timer()
     return (end.tv_sec - start.tv_sec) + 1.0e-6 * (end.tv_usec - start.tv_usec);
 }
 
-double start_time, end_time;  /* start and end times */
-int size, stripSize;          /* assume size is multiple of numWorkers */
-int matrix[MAXSIZE][MAXSIZE]; /* matrix */
-int max = INT_MIN, min = INT_MAX;
-int maxI = 0, maxJ = 0, minI = 0, minJ = 0; /* used for storing position of min and max */
-int total = 0;
+double start_time, end_time;                /* start and end times */
+int size, stripSize;                        /* assume size is multiple of numWorkers */
+int matrix[MAXSIZE][MAXSIZE];               /* matrix */
+int max = INT_MIN, min = INT_MAX;           // new! /* global maximum and minimum */
+int maxI = 0, maxJ = 0, minI = 0, minJ = 0; // new /* used for storing position of min and max */
+int total = 0;                              // new /* global sum */
 
 void *Worker(void *);
 
@@ -84,8 +84,10 @@ int main(int argc, char *argv[])
         }
     }
 
+    
+    start_time = read_timer(); // start the timer
+
     /* do the parallel work: create the workers */
-    start_time = read_timer();
     for (l = 0; l < numWorkers; l++)
     {
         pthread_create(&workerid[l], &attr, Worker, (void *)l);
@@ -121,7 +123,7 @@ void *Worker(void *arg)
         nextRow++;
         pthread_mutex_unlock(&bagLock);
 
-        if (row >= size)
+        if (row >= size) // if all rows have been processed break the loop
         {
             break;
         }
