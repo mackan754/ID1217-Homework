@@ -65,8 +65,6 @@ void *compute_pi_worker(void *arg)
 
     // Unlock the mutex
     pthread_mutex_unlock(&sumLock);
-
-    return NULL; // Return NULL to avoid warnings överkurs
 }
 
 int main(int argc, char *argv[])
@@ -121,6 +119,4 @@ int main(int argc, char *argv[])
     // which is Pi/4. So multiply by 4 to get Pi.
     printf("Estimated Pi: %.15f\n", globalSum * 4);
     printf("Execution Time: %.6f seconds\n", end_time - start_time);
-
-    return 0; // 0 = C program ran successfully
 }

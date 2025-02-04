@@ -46,6 +46,7 @@ int matrix[MAXSIZE][MAXSIZE];               /* matrix */
 int max = INT_MIN, min = INT_MAX;           // new! /* global maximum and minimum */
 int maxI = 0, maxJ = 0, minI = 0, minJ = 0; // new /* used for storing position of min and max */
 int total = 0;                              // new /* global sum */
+int nextRow = 0;
 
 void *Worker(void *);
 
@@ -110,7 +111,7 @@ int main(int argc, char *argv[])
 void *Worker(void *arg)
 {
     long myid = (long)arg;
-    int localTotal = 0, row = 0, j, nextRow = 0;
+    int localTotal = 0, row = 0, j;
     int localMin = INT_MAX, localMax = INT_MIN;
     int localMaxI = 0, localMaxJ = 0, localMinI = 0, localMinJ = 0;
 

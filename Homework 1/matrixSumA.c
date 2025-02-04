@@ -108,7 +108,7 @@ int main(int argc, char *argv[])
   {
     for (j = 0; j < size; j++)
     {
-      matrix[i][j] = rand() % 99; // Random values between 0 and 98
+      matrix[i][j] = 1; // Random values between 0 and 98
     }
   }
 
