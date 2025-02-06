@@ -6,13 +6,13 @@
 #define SIZE 1000000
 #define THREADS 10
 
-void swap(int* a, int* b) {
-    int t = *a;
-    *a = *b;
-    *b = t;
+void swapElements(int* x, int* y) {
+    int temp = *x;
+    *x = *y;
+    *y = temp;
 }
 
-int partition(int arr[], int low, int high) {
+int partitionArray(int arr[], int low, int high) {
     
     int pivot = arr[high];
     
@@ -21,18 +21,18 @@ int partition(int arr[], int low, int high) {
     for (int j = low; j <= high - 1; j++) {
         if (arr[j] < pivot) {
             i++;
-            swap(&arr[i], &arr[j]);
+            swapElements(&arr[i], &arr[j]);
         }
     }
   
-    swap(&arr[i + 1], &arr[high]);  
+    swapElements(&arr[i + 1], &arr[high]);  
     return i + 1;
 }
 
 void quickSort(int arr[], int low, int high) {
     if (low < high) {
         
-        int pi = partition(arr, low, high);
+        int pi = partitionArray(arr, low, high);
 
         #pragma omp parallel 
         {
@@ -60,10 +60,12 @@ int main() {
         arr[i] = rand() % 999;
     }
 
-    //Påbörja quickSort.
-    double t1 = omp_get_wtime();
+    double t1 = omp_get_wtime();  
+ 
     quickSort(arr, 0, SIZE - 1);
-    double t2 = omp_get_wtime();
+    
+
+    double t2 = omp_get_wtime();  
 
     double t = t2-t1;
 
