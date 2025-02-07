@@ -113,14 +113,13 @@ void *Worker(void *arg)
 {
     long myid = (long)arg;
     int localTotal = 0, i, j, first, last;
-
     int localMin = INT_MAX, localMax = INT_MIN;                     // new! Initialize local min to the largest possible value and local max to the smallest possible value
     int localMaxI = 0, localMaxJ = 0, localMinI = 0, localMinJ = 0; // new! Initialize local max and min coordinates to 0
 
     /* determine first and last rows of my strip */
     first = myid * stripSize;
     last = (myid == numWorkers - 1) ? (size - 1) : (first + stripSize - 1);
-    /* 
+    /*
     if (myid == numWorkers - 1)
     {
         last = size - 1;
@@ -131,8 +130,8 @@ void *Worker(void *arg)
     }
     */
 
-        /* compute sum, max, and min in my strip */
-        for (i = first; i <= last; i++)
+    /* compute sum, max, and min in my strip */
+    for (i = first; i <= last; i++)
     {
         for (j = 0; j < size; j++)
         {
