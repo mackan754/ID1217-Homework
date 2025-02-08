@@ -3,8 +3,8 @@
 #include <time.h>
 #include <omp.h>
 
-#define SIZE 1000000
-#define THREADS 10
+#define SIZE 1500000
+#define THREADS 4
 
 void swapElements(int* x, int* y) {
     int temp = *x;
@@ -33,19 +33,17 @@ void quickSort(int arr[], int low, int high) {
     if (low < high) {
         
         int pi = partitionArray(arr, low, high);
-
-        #pragma omp parallel 
+        
+        #pragma omp task
         {
-            #pragma omp sections 
-            {
-                quickSort(arr, low, pi - 1);
-            }
-
-            #pragma omp sections 
-            {
-                quickSort(arr, pi + 1, high);
-            }
+            quickSort(arr, low, pi - 1);
         }
+
+        #pragma omp task
+        {
+            quickSort(arr, pi + 1, high);
+        }
+        #pragma omp taskwait
     }
 }
 
@@ -61,9 +59,14 @@ int main() {
     }
 
     double t1 = omp_get_wtime();  
- 
-    quickSort(arr, 0, SIZE - 1);
-    
+
+    #pragma omp parallel
+    {
+        #pragma omp single
+        {
+            quickSort(arr, 0, SIZE - 1);
+        }
+    }
 
     double t2 = omp_get_wtime();  
 
