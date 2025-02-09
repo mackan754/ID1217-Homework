@@ -62,7 +62,7 @@ int main(int argc, char *argv[])
     // Local result variables
     int localMin = INT_MAX, localMax = INT_MIN;                     // new! Initialize local min to the largest possible value and local max to the smallest possible value
     int localMaxI = 0, localMaxJ = 0, localMinI = 0, localMinJ = 0; // new! Initialize local max and min coordinates to 0
-    
+
     for (j = 0; j < size; j++)
     {
       int matrixValue = matrix[i][j]; // new! Store the value of the current element in a variable for easier understanding
@@ -108,5 +108,5 @@ int main(int argc, char *argv[])
   printf("The max value is %d at coordinates (%d, %d)\n", globalMax, globalMaxI, globalMaxJ);
   printf("The min value is %d at coordinates (%d, %d)\n", globalMin, globalMinI, globalMinJ);
 
-  return 0; // Fuck you Marcus!
+  return 0;
 }
