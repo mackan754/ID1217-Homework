@@ -6,14 +6,14 @@
 #define SIZE 1500000
 #define THREADS 4
 
-void swapElements(int *x, int *y)
+void swapElements(int *x, int *y) // Function to swap elements
 {
     int temp = *x;
     *x = *y;
     *y = temp;
 }
 
-int partitionArray(int arr[], int low, int high)
+int partitionArray(int arr[], int low, int high) // Function to partition array
 {
 
     int pivot = arr[high]; // Last element as pivot
@@ -30,7 +30,7 @@ int partitionArray(int arr[], int low, int high)
     }
 
     swapElements(&arr[i + 1], &arr[high]); // Place pivot element in correct position
-    return i + 1;                          // Return pivot index
+    return i + 1;                          // Return pivot index (pi)
 }
 
 void quickSort(int arr[], int low, int high)
@@ -40,12 +40,12 @@ void quickSort(int arr[], int low, int high)
 
         int pi = partitionArray(arr, low, high); // Seperate array into partitions indexs
 
-#pragma omp task //Parallelize the left side of the array   
+#pragma omp task // Parallelize the left side of the array
         {
             quickSort(arr, low, pi - 1); // Sort left sida parallel
         }
 
-#pragma omp task //Parallelize the right side of the array
+#pragma omp task // Parallelize the right side of the array
         {
             quickSort(arr, pi + 1, high); // Sort right sida parallel
         }
@@ -57,6 +57,7 @@ int main()
 {
 
     omp_set_num_threads(THREADS);
+
     srand(time(NULL));
 
     // Skapa arrayen och lägg in slumpmässiga värden.
@@ -68,7 +69,7 @@ int main()
 
     double t1 = omp_get_wtime();
 
-#pragma omp parallel //Start parallel region
+#pragma omp parallel // Start parallel region
     {
 #pragma omp single // Only let one thread execute this block
         {

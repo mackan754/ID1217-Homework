@@ -82,9 +82,8 @@ int main(int argc, char *argv[])
       }
     }
 #pragma omp critical
+    // Only one thread executes this block at a time.
     {
-
-      // Only one thread executes this block at a time.
       if (globalMax < localMax)
       {
         globalMax = localMax;
