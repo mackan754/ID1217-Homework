@@ -5,20 +5,21 @@
              and prints the total sum to the standard output
 
    usage under Linux:
-     gcc matrixSum.c -lpthread
-     a.out size numWorkers
+     gcc -o matrixSumA matrixSumA.c -lpthread
+     ./matrixSumA 1000 4 [size numWorkers]
 
 */
 #ifndef _REENTRANT
 #define _REENTRANT
 #endif
+
 #include <pthread.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdbool.h>
 #include <time.h>
 #include <sys/time.h>
-#include <limits.h>
+#include <limits.h> // new! For INT_MIN and INT_MAX
 
 #define MAXSIZE 10000 /* maximum matrix size */
 #define MAXWORKERS 10 /* maximum number of workers */
@@ -70,8 +71,8 @@ typedef struct
   int value;
 } Element;
 
-Element workerMin[MAXWORKERS];
-Element workerMax[MAXWORKERS];
+Element workerMin[MAXWORKERS]; /* used for storing min values for different workers*/
+Element workerMax[MAXWORKERS]; /* used for max values*/
 
 void *Worker(void *);
 
@@ -100,14 +101,14 @@ int main(int argc, char *argv[])
     numWorkers = MAXWORKERS;
   stripSize = size / numWorkers;
 
-  srand(time(NULL)); // seed för att få olika värden varje gång programmet körs.
+  /* srand(time(NULL)); // seed to get different random values.. */
 
   /* initialize the matrix */
   for (i = 0; i < size; i++)
   {
     for (j = 0; j < size; j++)
     {
-      matrix[i][j] = rand() % 99; // Random values between 0 and 98
+      matrix[i][j] = 1; // Random values between 0 and 98
     }
   }
 
@@ -139,8 +140,9 @@ void *Worker(void *arg)
 {
   long myid = (long)arg;
   int total, i, j, first, last;
-  Element max = {0, 0, INT_MIN};
-  Element min = {0, 0, INT_MAX};
+
+  Element max = {0, 0, INT_MIN}; // new! Initialize max to the smallest possible value
+  Element min = {0, 0, INT_MAX}; // new! Initialize min to the largest possible value
 
 #ifdef DEBUG
   printf("worker %ld (pthread id %ld) has started\n", myid, pthread_self());
@@ -157,13 +159,13 @@ void *Worker(void *arg)
     for (j = 0; j < size; j++)
     {
       total += matrix[i][j];
-      if (matrix[i][j] > max.value)
+      if (matrix[i][j] > max.value) // new! Check if the current value is greater than the current max
       {
         max.value = matrix[i][j];
         max.i = i;
         max.j = j;
       }
-      if (matrix[i][j] < min.value)
+      if (matrix[i][j] < min.value) // new! Check if the current value is less than the current min
       {
         min.value = matrix[i][j];
         min.i = i;
@@ -172,25 +174,28 @@ void *Worker(void *arg)
     }
   }
 
-  /* Store results for this worker */
+  /* new! Store results for this worker */
   sums[myid] = total;
   workerMax[myid] = max;
   workerMin[myid] = min;
 
   Barrier();
 
+  /* worker 0 updates the global variables */
   if (myid == 0)
   {
     total = 0;
 
     for (i = 0; i < numWorkers; i++)
     {
+
       total += sums[i];
-      if (workerMax[i].value > max.value)
+
+      if (workerMax[i].value > max.value) // new! Check if the current max is greater than the global max
       {
         max = workerMax[i];
       }
-      if (workerMin[i].value < min.value)
+      if (workerMin[i].value < min.value) // new! Check if the current min is less than the global min
       {
         min = workerMin[i];
       }
