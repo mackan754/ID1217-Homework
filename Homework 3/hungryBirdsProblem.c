@@ -1,4 +1,3 @@
-
 /*
    Compile and run:
     gcc hungryBirdsProblem.c -o hungryBirdsProblem -lpthread
