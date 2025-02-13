@@ -9,7 +9,7 @@
 void *Bee(void *);
 void *Bear(void *);
 
-sem_t spaceAvailable, honeyCount;
+sem_t spaceAvailable, honeyCount, mutex;
 int honey;
 int numBees;
 int pot;
@@ -22,6 +22,7 @@ int main(int argc, char *argv[])
     pthread_attr_t attr;
     pthread_attr_init(&attr);
     pthread_attr_setscope(&attr, PTHREAD_SCOPE_SYSTEM);
+    srand(time(NULL));
 
     /* Set default values */
     numBees = 10;
@@ -34,6 +35,7 @@ int main(int argc, char *argv[])
 
     sem_init(&spaceAvailable, SHARED, pot);
     sem_init(&honeyCount, SHARED, 0);
+    sem_init(&mutex, SHARED, 1);
 
     printf("main started\n");
 
@@ -63,12 +65,14 @@ void *Bee(void *arg)
     while (1)
     {
         sem_wait(&spaceAvailable);
+        sem_wait(&mutex);
         honey++;
-        printf("Bee %ld deposited honey.\n", myid);
-
+        printf("Bee %ld deposited honey. The honey count is now %d.\n", myid, honey);
+        sem_post(&mutex);
         sem_post(&honeyCount);
 
-        usleep(1000000);
+        int sleepTime = (rand() % 5) * 1000000;
+        usleep(sleepTime);
     }
 }
 
@@ -79,18 +83,18 @@ void *Bear(void *arg)
     {
         for (int i = 0; i < pot; i++)
         {
-            sem_wait(&honeyCount); 
+            sem_wait(&honeyCount);
         }
 
         printf("Bear awakened. Consuming honey.\n");
+        sem_wait(&mutex);
         honey = 0;
         printf("Bear ate all the honey. Pot is now empty.\n");
-
+        sem_post(&mutex);
+        
         for (int i = 0; i < pot; i++)
         {
-            sem_post(&spaceAvailable); 
+            sem_post(&spaceAvailable);
         }
-
-        usleep(1000000);
     }
 }
