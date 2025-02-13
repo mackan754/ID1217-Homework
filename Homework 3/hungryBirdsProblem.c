@@ -1,7 +1,7 @@
-/* a simple parentBird/babyBird using semaphores and threads
+/* a simple OneProducer/ManyConsumers using semaphores and threads
 
    usage on Solaris:
-    gcc hungryBirdsProblem.c -o hungryBirdsProblem -lpthread -lposix4
+    gcc hungryBirdsProblem.c -o hungryBirdsProblem -lpthread
     ./hungryBirdsProblem numIters
 
 */
@@ -12,129 +12,140 @@
 #include <stdlib.h>
 #include <pthread.h>
 #include <semaphore.h>
+#include <stdbool.h>
+#include <unistd.h>
 
 #define SHARED 1
-#define MAXITERATION 100
-#define MAXBABYBIRD 20
-#define MAXWORMS 5 // Number of worms the parent will gather each time
+#define MAXITERATION 1000000
+#define MAXCONSUMERS 2
+#define W 10
 
-void *ParentBird(void *); // One Producer
-void *BabyBird(void *);   // Many Consumers
+void *OneProducer(void *);   // One Producer
+void *ManyConsumers(void *); // Many Consumers
 
-sem_t dishIsEmpty, dishIsFull, printSem; /* the global semaphores */
-int worms = 0;                           /* shared buffer         */
-int babyBirdHungry;
-int numberOfBabyBirds; // new
+/* the global semaphores */
+sem_t dishLock;     // binary semaphore to protect dish access
+sem_t parentSem;    // parent waits on this semaphore to be signaled
+sem_t dishRefilled; // baby birds waiting for dish refill wait on this
 
-/* main() -- read command line and create threads, then
-             print result when the threads have quit */
+// Shared variables
+int worms = W;              // current worms in the dish
+int waitingCount = 0;       // number of baby birds waiting for a refill
+bool callingParent = false; // flag to ensure only one call to parent
 
 int main(int argc, char *argv[])
 {
-
+    int numOfConsumers; // number of baby birds
     /* Read command line arguments, if any, else set to max */
-    babyBirdHungry = (argc > 1) ? atoi(argv[1]) : 1;
-    numberOfBabyBirds = (argc > 2) ? atoi(argv[2]) : MAXBABYBIRD;
+    worms = (argc > 1) ? atoi(argv[1]) : W;
+    numOfConsumers = (argc > 2) ? atoi(argv[2]) : MAXCONSUMERS;
 
-    if (babyBirdHungry > MAXITERATION)
-        babyBirdHungry = MAXITERATION;
+    if (worms > MAXITERATION)
+        worms = MAXITERATION;
 
-    if (numberOfBabyBirds > MAXBABYBIRD)
-        numberOfBabyBirds = MAXBABYBIRD;
+    if (numOfConsumers > MAXCONSUMERS)
+        numOfConsumers = MAXCONSUMERS;
 
     printf("main started\n");
-    /* start timer here */
 
     /* Initilized semaphores */
-    sem_init(&dishIsEmpty, SHARED, 1); /* sem dishIsEmpty = 1 */
-    sem_init(&dishIsFull, SHARED, 0);  /* sem dishIsFull = 0  */
-    sem_init(&printSem, SHARED, 1);    /* sem to control print order  */
+    sem_init(&dishLock, SHARED, 1);
+    sem_init(&dishRefilled, SHARED, 0);
+    sem_init(&parentSem, SHARED, 0);
 
     /* thread ids and attributes */
-    pthread_t babyBirdID[MAXBABYBIRD];
-    pthread_t parentBirdID;
+    pthread_t manyConsumersID[MAXCONSUMERS];
+    pthread_t OneProducerID;
 
     /* Create Bird family */
 
     // Create one bird parent worker and start singel gathering
-    pthread_create(&parentBirdID, NULL, ParentBird, NULL);
+    pthread_create(&OneProducerID, NULL, OneProducer, NULL);
 
     // Create many baby workers and start parlell eating
-    for (long l = 0; l < numberOfBabyBirds; l++)
+    for (long l = 0; l < numOfConsumers; l++)
     {
-        pthread_create(&babyBirdID[l], NULL, BabyBird, (void *)l);
+        pthread_create(&manyConsumersID[l], NULL, ManyConsumers, (void *)l);
     }
 
     /* Join Threads (aka kill bird family) */
 
     // Terminate parent worker after finish gathering
-    pthread_join(parentBirdID, NULL);
+    pthread_join(OneProducerID, NULL);
 
     // Terminate baby workers after finish eating
-    for (long l = 0; l < numberOfBabyBirds; l++)
+    for (long l = 0; l < numOfConsumers; l++)
     {
-        pthread_join(babyBirdID[l], NULL);
+        pthread_join(manyConsumersID[l], NULL);
     }
 
     printf("main done\n");
-
-    /* end timer here */
+    // printf("for %d iterations, the total Amount of food consuming is %d\n", fullPot, worms);
     return 0;
 }
 
 /* deposit 1, ..., numIters into the data buffer */
-void *ParentBird(void *arg) // One Producer
+void *OneProducer(void *arg) // One Producer
 {
     printf("Parent bird created\n");
-
-    for (int gatherWorms = 0; gatherWorms < babyBirdHungry; gatherWorms++)
+    while (1)
     {
-        if (worms == 0) // Added to handle deadlock
-        {
-            // If no worms are left and all iterations are complete, stop refilling
-            sem_post(&dishIsFull); // Signal to baby birds that the dish is empty
-            break;
-        }
-        sem_wait(&dishIsEmpty);                           // Wait for the dish to be empty
-        worms = MAXWORMS;                                 // Gather worms
-        sem_wait(&printSem);                              // Wait for the baby birds to finish eating
-        printf("Parent bird gathered %d worms\n", worms); // Enuser that the parent bird is gathering worms
-        sem_post(&printSem);                              // Signal the baby birds that the parent bird is done gathering
-        sem_post(&dishIsFull);                            // Signal the baby birds that the dish is full
-    }
+        // Wait till the baby birds call the parent that the dish is empty
+        sem_wait(&parentSem);
 
-    return NULL;
+        // Refill dish with W food
+        sem_wait(&dishLock);
+        printf("Parent bird refills the dish with %d worms.\n", W);
+        worms = W;
+
+        while (waitingCount > 0)
+        {
+            sem_post(&dishRefilled);
+            waitingCount--;
+        }
+        callingParent = false;
+        sem_post(&dishLock);
+
+        // Simulate the time to gather worms.
+        sleep(rand() % 3 + 1);
+
+        return NULL;
+    }
 }
 
 /* fetch numIters items from the buffer and sum them */
-void *BabyBird(void *arg) // Many Consumers
+void *ManyConsumers(void *arg) // Many Consumers
 {
+    long consumerID = (long)arg;
+    printf("Baby bird %ld created\n", consumerID);
 
-    long birdID = (long)arg;
-    int totalAmountOfWormsConsumed = 0, consumed;
-
-    sem_wait(&printSem); // Ensure that only one thread prints at a time
-    printf("Baby bird %ld created\n", birdID);
-    sem_post(&printSem); // Release the print semaphore
-
-    for (consumed = 0; consumed < babyBirdHungry; consumed++)
+    while (1)
     {
-        sem_wait(&dishIsFull);
+        // Simulate delay between eating attempts.
+        sleep(rand() % 3 + 1);
 
+        sem_wait(&dishLock);
         if (worms == 0)
         {
-            // If no worms are left, exit the loop
-            break;
+            waitingCount++;
+            if (!callingParent)
+            {
+                callingParent = true;
+                printf("Baby bird %ld finds no food and calls parent\n", consumerID);
+                sem_post(&parentSem); // signal and wake up parent
+            }
+            sem_post(&dishLock);
+            sem_wait(&dishRefilled);
+            continue; // go back to the top of the loop
         }
-        totalAmountOfWormsConsumed += worms;
-        sem_wait(&printSem); // Ensure that only one thread prints at a time
-        printf("Baby bird %ld eats %d worms. Total eaten: %d\n", birdID, worms, totalAmountOfWormsConsumed);
-        sem_post(&printSem); // Release the print semaphore
-        sem_post(&dishIsEmpty);
-    }
 
-    sem_wait(&printSem); // Ensure that only one thread prints at a time
-    printf("for %d iterations, the total Amount of worms consumed is %d\n", babyBirdHungry, totalAmountOfWormsConsumed);
-    sem_wait(&printSem); // Ensure that only one thread prints at a time
+        worms--;
+        printf("Baby bird %ld takes a worm. Worms left: %d\n", consumerID, worms);
+        sem_post(&dishLock);
+
+        // Simulate eating.
+        printf("Baby bird %ld is eating a worm.\n", consumerID);
+        sleep(rand() % 3 + 1);
+    }
     return NULL;
 }
