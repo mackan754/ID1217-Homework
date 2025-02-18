@@ -1,18 +1,18 @@
 public class HoneyMonitor {
     private int counter;
     private final int capacity;
-    private boolean isFull = false;
 
     public HoneyMonitor(int capacity) {
         this.capacity = capacity;
     }
 
     public synchronized void incrementCounter() {
-        while (counter == capacity) {
+        while (counter == capacity) {  
             try {
                 wait();
             } catch (InterruptedException e) {
-                e.printStackTrace();
+                Thread.currentThread().interrupt(); 
+                return;
             }
         }
 
@@ -21,26 +21,28 @@ public class HoneyMonitor {
 
         if (counter == capacity) {
             System.out.println("Pot is full! Waking up the bear...");
-            isFull = true;
-            notify();
+            notifyAll(); 
         }
     }
 
     public synchronized void decrementCounter() {
-        while (!isFull) {
+        while (counter < capacity) {  
             try {
                 wait();
             } catch (InterruptedException e) {
                 e.printStackTrace();
+                return;
             }
         }
+
         counter = 0;
-        isFull = false;
         System.out.println("Bear ate all the honey!");
-        notifyAll();
+        notifyAll(); 
     }
 
     public synchronized int getCounter() {
         return counter;
     }
 }
+
+
