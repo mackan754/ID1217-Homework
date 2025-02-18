@@ -12,7 +12,7 @@ class Bee extends Thread {
         while (true) {
             honey.incrementCounter();
             try {
-                Thread.sleep((long) (Math.random() * 10000));
+                Thread.sleep((long) (Math.random() * 1000));
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
