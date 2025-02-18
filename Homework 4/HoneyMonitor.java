@@ -11,7 +11,7 @@ public class HoneyMonitor {
             try {
                 wait();
             } catch (InterruptedException e) {
-                Thread.currentThread().interrupt(); 
+                e.printStackTrace();
                 return;
             }
         }
