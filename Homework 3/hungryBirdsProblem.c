@@ -1,4 +1,3 @@
-
 /*
    Compile and run:
     gcc hungryBirdsProblem.c -o hungryBirdsProblem -lpthread
@@ -16,7 +15,7 @@
 
 #define SHARED 1 // 1 means shared between threads, 0 means not shared. In this code we only have one process so it does not matter.
 #define MAXBABYBIRDS 20
-#define W 100
+#define W 10
 
 /* Semaphores */
 sem_t dishLock;     // binary semaphore to protect dish access
@@ -83,6 +82,7 @@ void *ParentBird(void *arg) // One Producer
         while (waitingCount > 0)
         {
             sem_post(&dishRefilled);
+            printf("%d baby birds are waiting for food.\n", waitingCount);
             waitingCount--;
         }
         callingParent = false;
