@@ -33,7 +33,7 @@ class Bowl {
         }
         worms = capacity;
         System.out.println("Bowl is filled with " + worms + " worms");
-        notify();
+        notifyAll();
     }
 }
 
