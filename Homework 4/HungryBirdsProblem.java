@@ -22,7 +22,7 @@ class Bowl {
         System.out.println("Bird " + birdID + " is eating a worm");
 
         if (worms == 0) {
-            System.out.println(birdID + "found the bowl empty");
+            System.out.println(birdID + " found the bowl empty");
             notifyAll();
         }
     }
@@ -33,7 +33,7 @@ class Bowl {
         }
         worms = capacity;
         System.out.println("Bowl is filled with " + worms + " worms");
-        notifyAll();
+        notify();
     }
 }
 
