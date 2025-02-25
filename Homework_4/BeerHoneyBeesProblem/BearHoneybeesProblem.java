@@ -1,4 +1,7 @@
-
+/* 
+ * javac BearHoneybeesProblem.java
+ * java BearHoneybeesProblem
+ */
 class Bee extends Thread {
 
     private final HoneyMonitor honey;
@@ -47,11 +50,11 @@ public class BearHoneybeesProblem {
 
         System.out.println("main started\n");
 
-        //Skapa bear
+        // Skapa bear
         Bear bear = new Bear(honey);
         bear.start();
 
-        //Skapa bee workers.
+        // Skapa bee workers.
         for (int i = 0; i < numBees; i++) {
             System.out.printf("Bee %d created\n.", i);
             bees[i] = new Bee(honey);
