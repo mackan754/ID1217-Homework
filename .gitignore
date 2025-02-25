@@ -1,8 +1,3 @@
 .vscode
 *class
 a.out
-computePi
-matrixSumA
-matrixSumB
-matrixSumC
-matrixSum-openmp

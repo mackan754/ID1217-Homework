@@ -1,7 +1,7 @@
 #include <mpi.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <unistd.h> // För sleep()
+#include <unistd.h> // För sleep
 
 // Definiera meddelande tag
 #define PICKUP 0
